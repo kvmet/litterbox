@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit an Idea</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        textarea { width: 100%; min-height: 200px; padding: 10px; font-size: 16px; box-sizing: border-box; }
+        button { padding: 10px 20px; font-size: 16px; margin-top: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Submit Your Idea</h1>
+    <form method="POST" action="/submit">
+        <textarea name="text" placeholder="Enter your idea here..." required></textarea>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
