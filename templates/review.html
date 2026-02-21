@@ -191,7 +191,7 @@
               html += "<p>No submissions</p>";
             } else {
               grouped[status].forEach((record) => {
-                const text = escapeHtml(record.text);
+                const text = linkifyUrls(escapeHtml(record.text));
                 html += '<div class="submission">';
                 html += '<div class="submission-text">' + text + "</div>";
                 html +=
@@ -244,6 +244,14 @@
         const div = document.createElement("div");
         div.textContent = text;
         return div.innerHTML;
+      }
+
+      function linkifyUrls(text) {
+        const urlPattern = /(https?:\/\/[^\s]+)/g;
+        return text.replace(
+          urlPattern,
+          '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>',
+        );
       }
 
       function toggleGroup(groupId) {
