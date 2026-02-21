@@ -164,6 +164,16 @@
       }
 
       async function loadSubmissions() {
+        // Save current collapsed state
+        const collapsedState = {};
+        ["approved", "new", "done", "hidden", "deleted"].forEach((status) => {
+          const groupId = "group-" + status;
+          const group = document.getElementById(groupId);
+          if (group) {
+            collapsedState[status] = group.style.display === "none";
+          }
+        });
+
         try {
           const records = await pb.collection("submissions").getFullList({
             sort: "-created",
@@ -275,14 +285,24 @@
 
           document.getElementById("submissions").innerHTML = html;
 
-          // Auto-collapse done, hidden, and deleted groups
-          ["done", "hidden", "deleted"].forEach((status) => {
+          // Restore previous collapsed state or use defaults
+          ["approved", "new", "done", "hidden", "deleted"].forEach((status) => {
             const groupId = "group-" + status;
             const group = document.getElementById(groupId);
             const icon = document.getElementById(groupId + "-icon");
             if (group && icon) {
-              group.style.display = "none";
-              icon.textContent = "[+]";
+              // If we have saved state, use it; otherwise use defaults
+              const shouldCollapse = collapsedState.hasOwnProperty(status)
+                ? collapsedState[status]
+                : ["done", "hidden", "deleted"].includes(status);
+
+              if (shouldCollapse) {
+                group.style.display = "none";
+                icon.textContent = "[+]";
+              } else {
+                group.style.display = "block";
+                icon.textContent = "[-]";
+              }
             }
           });
         } catch (err) {
