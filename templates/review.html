@@ -95,6 +95,13 @@
       .group h2 {
         user-select: none;
       }
+      .notes {
+        background: #fff3cd;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 3px;
+        border-left: 3px solid #ffc107;
+      }
     </style>
   </head>
   <body>
@@ -193,9 +200,17 @@
               html += "<p>No submissions</p>";
             } else {
               grouped[status].forEach((record) => {
+                html +=
+                  '<div class="submission" id="submission-' + record.id + '">';
+                html += '<div class="view-mode">';
                 const text = linkifyUrls(escapeHtml(record.text));
-                html += '<div class="submission">';
                 html += '<div class="submission-text">' + text + "</div>";
+                if (record.notes) {
+                  html +=
+                    '<div class="notes"><strong>Notes:</strong> ' +
+                    escapeHtml(record.notes) +
+                    "</div>";
+                }
                 html +=
                   '<div class="meta">Created: ' + record.created + "</div>";
                 html += "<div>";
@@ -219,7 +234,40 @@
                   '<button class="btn-deleted" onclick="updateStatus(\'' +
                   record.id +
                   "', 'deleted')\">Deleted</button>";
+                html +=
+                  " <button onclick=\"editSubmission('" +
+                  record.id +
+                  "')\">Edit</button>";
                 html += "</div></div>";
+
+                // Edit mode (hidden by default)
+                html += '<div class="edit-mode" style="display: none;">';
+                html +=
+                  '<textarea id="edit-text-' +
+                  record.id +
+                  '" style="width: 100%; min-height: 100px;">' +
+                  escapeHtml(record.text) +
+                  "</textarea>";
+                html +=
+                  '<label style="display: block; margin-top: 10px;"><strong>Notes:</strong></label>';
+                html +=
+                  '<textarea id="edit-notes-' +
+                  record.id +
+                  '" style="width: 100%; min-height: 60px;">' +
+                  escapeHtml(record.notes || "") +
+                  "</textarea>";
+                html += '<div style="margin-top: 10px;">';
+                html +=
+                  '<button class="btn-approved" onclick="saveSubmission(\'' +
+                  record.id +
+                  "')\">Save</button> ";
+                html +=
+                  "<button onclick=\"cancelEdit('" +
+                  record.id +
+                  "')\">Cancel</button>";
+                html += "</div></div>";
+
+                html += "</div>";
               });
             }
             html += "</div></div>";
@@ -254,6 +302,34 @@
           urlPattern,
           '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>',
         );
+      }
+
+      function editSubmission(id) {
+        const submission = document.getElementById("submission-" + id);
+        submission.querySelector(".view-mode").style.display = "none";
+        submission.querySelector(".edit-mode").style.display = "block";
+      }
+
+      function cancelEdit(id) {
+        const submission = document.getElementById("submission-" + id);
+        submission.querySelector(".view-mode").style.display = "block";
+        submission.querySelector(".edit-mode").style.display = "none";
+      }
+
+      async function saveSubmission(id) {
+        const text = document.getElementById("edit-text-" + id).value;
+        const notes = document.getElementById("edit-notes-" + id).value;
+
+        try {
+          await pb.collection("submissions").update(id, {
+            text: text,
+            notes: notes,
+          });
+          cancelEdit(id);
+          loadSubmissions();
+        } catch (err) {
+          alert("Failed to save: " + err.message);
+        }
       }
 
       function toggleGroup(groupId) {

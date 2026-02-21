@@ -17,6 +17,14 @@ func init() {
 			},
 		)
 
+		// Add notes field for admin comments
+		collection.Fields.Add(
+			&core.TextField{
+				Name:     "notes",
+				Required: false,
+			},
+		)
+
 		// Add status field with options
 		collection.Fields.Add(
 			&core.SelectField{
